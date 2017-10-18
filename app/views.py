@@ -1,6 +1,7 @@
 from app import flask, db
-from flask import render_template, flash, redirect, abort, jsonify, request
+from flask import render_template, flash, redirect, abort, jsonify, request, make_response
 from .forms import LoginForm
+import json
 import models
 
 @flask.route('/')
@@ -20,11 +21,10 @@ def login():
                            form=form,
                            providers=flask.config['OPENID_PROVIDERS'])
 
-@flask.route('/get/<string:uid>/')
+@flask.route('/user/<string:uid>/')
 def get_dev(uid):
     u = models.User.query.get(uid)
-    return jsonify(uid=u.uid, name=u.name, email=u.email, college=u.college, branch=u.branch, specialization=u.specialization, is_mentor=u.is_mentor, 
-cert_link=u.cert_link, profile_image=u.profile_image, organization=u.organization, year=u.year)
+    return to_json(u)
 
 @flask.route('/post/register/', methods = ['POST'])
 def create_dev():
@@ -35,5 +35,19 @@ def create_dev():
     request.json.get('profile_image'), request.json.get('organization',''), request.json.get('year', ''))
     db.session.add(u)
     db.session.commit()
-    return jsonify(uid=u.uid, name=u.name, email=u.email, college=u.college, branch=u.branch, specialization=u.specialization, is_mentor=u.is_mentor, 
-cert_link=u.cert_link, profile_image=u.profile_image, organization=u.organization, year=u.year), 201
+    return make_response(to_json(u), 201)
+
+@flask.route('/users/', methods = ['GET'])
+def get_all():
+    users = models.User.query.all()
+    user_list = []
+    for u in users:
+        user_list.append(to_json(u))
+    temp = ", ".join(user_list)
+    # TODO : Use better logic here
+    return "{ \"users\" : [" + temp + "] }"
+
+def to_json(u):
+    data = {"uid":u.uid, "name":u.name, "email":u.email, "college":u.college, "branch":u.branch, "specialization":u.specialization, "is_mentor":u.is_mentor, 
+"cert_link":u.cert_link, "profile_image":u.profile_image, "organization":u.organization, "year":u.year}
+    return json.dumps(data)
