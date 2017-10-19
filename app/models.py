@@ -13,7 +13,7 @@ class User(db.Model):
     organization = db.Column(db.String, index=True, unique=False)
     year = db.Column(db.Integer, index=True, unique=False)
 
-    def __init__(self,uid,name,email,college,branch,specialization,is_mentor,cert_link,profile_image,organization,year):
+    def __init__(self, uid, name, email, college, branch, specialization, is_mentor, cert_link, profile_image, organization, year):
         self.uid = uid
         self.name = name
         self.branch = branch
@@ -25,6 +25,5 @@ class User(db.Model):
         self.profile_image = profile_image
         self.specialization = specialization
         self.year = year
-        
     def __repr__(self):
         return '<User %r>' % (self.name)
